@@ -7,7 +7,7 @@ import time
 import requests
 import uvicorn
 
-from backend.main import create_app
+from backend.main import create_app  
 
 
 HOST = "127.0.0.1"
