@@ -1,89 +1,110 @@
 # Expense Tracker
 
-A minimal full-stack personal finance tool built for the assignment brief:
+This project is a lightweight full-stack personal finance application developed as part of the assignment.
 
-- FastAPI backend API
-- Streamlit frontend
-- SQLite persistence
-- Idempotent expense creation for safe client retries
-- Basic validation, loading/error UI states, and a small test suite
+It includes:
+- A backend API built using FastAPI
+- A frontend interface using Streamlit
+- SQLite database for persistent storage
+- Safe expense creation using idempotency (to handle retries)
+- Basic input validation, UI feedback (loading/error), and simple tests
 
-## Run locally
+---
 
-Install dependencies:
+## Running the Application Locally
 
-```bash
+### Install required packages:
+
 pip install -r requirements.txt
-```
 
-Start the API:
+### Start the backend server:
 
-```bash
 uvicorn backend.main:app --reload
-```
 
-In another terminal, start the Streamlit app:
+### Launch the frontend (in a new terminal):
 
-```bash
 streamlit run streamlit_app.py
-```
 
-On Windows, you can also double-click `start_app.bat` to start both the API and Streamlit app. If you only run `streamlit run streamlit_app.py`, the frontend starts an internal FastAPI server automatically so it can still work on Streamlit Community Cloud.
+On Windows, you can also run `start_app.bat` to start both backend and frontend together.
 
-By default, the frontend talks to `http://127.0.0.1:8000`.
+If only the Streamlit app is started, it will automatically run an internal FastAPI server so the app can still function (useful for deployment on Streamlit Community Cloud).
 
-The SQLite database is created at `data/expenses.db`.
+By default, the frontend connects to:
+http://127.0.0.1:8000
 
-## API
+The database file is stored at:
+data/expenses.db
 
-### `POST /expenses`
+---
 
-Creates an expense.
+## API Endpoints
 
-```json
+### POST /expenses
+
+Creates a new expense entry.
+
+Example request:
 {
   "amount": "125.50",
   "category": "Food",
   "description": "Lunch",
   "date": "2026-04-29"
 }
-```
 
-Use an `Idempotency-Key` header for retry safety. If the same key and same payload are submitted again, the API returns the original expense instead of creating a duplicate. If the same key is reused with a different payload, the API returns `409 Conflict`.
+You can include an Idempotency-Key header to make requests safe for retries.
 
-### `GET /expenses`
+- Same key + same data → returns the original expense (no duplicate)
+- Same key + different data → returns 409 Conflict
 
-Returns expenses. Optional query parameters:
+---
 
-- `category=Food`
-- `sort=date_desc`
+### GET /expenses
 
-## Tests
+Fetches all expenses.
 
-```bash
+Optional query parameters:
+- category=Food (filter by category)
+- sort=date_desc (sort by newest date first)
+
+---
+
+## Running Tests
+
 pytest
-```
 
-The tests cover expense creation, list retrieval, category filtering, date sorting, amount validation, and idempotent retry behavior.
+The tests cover:
+- Expense creation
+- Retrieving expense list
+- Category filtering
+- Sorting by date
+- Amount validation
+- Idempotent request behavior
 
-## Design decisions
+---
 
-SQLite is used because it is durable, simple to run locally, and a better fit for realistic refresh/retry behavior than an in-memory store. Money is stored as integer paise (`amount_minor`) to avoid floating point rounding errors, while API responses expose a two-decimal rupee amount string.
+## Design Choices
 
-The backend supports optional `Idempotency-Key` headers. Without a key, `POST /expenses` behaves like a normal create endpoint. With a key, it becomes safe for the Streamlit app to retry after a slow response, failed response, double submit, or browser refresh.
+- SQLite is used for persistence because it is simple, reliable, and suitable for local usage.
+- Monetary values are stored in paise (amount_minor) as integers to avoid floating-point precision issues.
+- API responses convert values back into rupees with two decimal places.
+- Idempotency support ensures safe retries in cases like network failures, duplicate submissions, or page refreshes.
+
+---
 
 ## Trade-offs
 
-Authentication, user accounts, recurring expenses, pagination, and deployment configuration are intentionally left out to keep the feature set focused. The frontend uses simple Streamlit components rather than a custom design system. Category filtering is exact-match based on the existing saved categories.
+To keep the project focused within the given time:
+- No authentication or user accounts
+- No recurring expense feature
+- No pagination
+- No advanced deployment configuration
 
-## Streamlit Community Cloud deployment
+The frontend is intentionally simple using Streamlit components instead of a custom UI framework. Category filtering is based on exact matches from stored data.
 
-The app is deployed on Streamlit Community Cloud:
+---
 
-https://expense-tracker-fenma-assignment.streamlit.app/
+## Deployment
 
-## Intentionally not done
+The application is deployed on Streamlit Community Cloud:
 
-Custom design system: used simple Streamlit components because of the timebox.
-User authentication and multi-user support were intentionally not included
-to keep the system focused and maintainable within the time constraint.
+https://fenmo-expense-tracker-btc9za7rsyrpxporp3f39j.streamlit.app/
